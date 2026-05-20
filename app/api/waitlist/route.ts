@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rateLimit";
+import { sendWaitlistConfirmation } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,9 @@ export async function POST(request: NextRequest) {
       event_type: "waitlist_signup",
       properties: { email, founder_type, stage },
     }]);
+
+    // Send confirmation email (non-blocking — never fails the request)
+    sendWaitlistConfirmation(email, full_name).catch(() => {});
 
     return NextResponse.json({ success: true, data });
   } catch (error: unknown) {
