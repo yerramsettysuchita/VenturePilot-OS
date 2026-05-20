@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --teal: #00C9A7;
+  --purple: #8B5CF6;
+  --amber: #F59E0B;
+  --coral: #F97316;
+  --ink: #0A0A0F;
+}
+
+html { scroll-behavior: smooth; }
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #0A0A0F;
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  border-top: 4px solid;
+  border-image: linear-gradient(to right, #00C9A7, #8B5CF6) 1;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748B;
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #E2E8F0, transparent);
+}
+
+.btn-scale {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.btn-scale:hover  { transform: scale(1.02); }
+.btn-scale:active { transform: scale(0.98); }
+
+button, a, [role="button"] { cursor: pointer; }
+
+/* Shake animation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-6px); }
+  30%       { transform: translateX(6px); }
+  45%       { transform: translateX(-4px); }
+  60%       { transform: translateX(4px); }
+  75%       { transform: translateX(-2px); }
+  90%       { transform: translateX(2px); }
+}
+.shake { animation: shake 0.5s ease; }
+
+/* Pulsing dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.85); }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* Float animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+.float-1 { animation: float 4s ease-in-out infinite; }
+.float-2 { animation: float 4s ease-in-out infinite 0.5s; }
+.float-3 { animation: float 4s ease-in-out infinite 1s; }
+
+/* Assumption ticker scroll */
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-inner {
+  animation: ticker-scroll 40s linear infinite;
+  display: flex;
+  width: max-content;
+}
+.ticker-inner:hover {
+  animation-play-state: paused;
+}
+
+/* Scrollbar hide for horizontal scroll areas */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+  .ticker-inner { animation: none; }
+}
