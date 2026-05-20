@@ -63,14 +63,14 @@ function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void 
   useEffect(() => { if (open) { setQuery(""); setSelected(0); setTimeout(() => inputRef.current?.focus(), 50); } }, [open]);
 
   useEffect(() => {
+    if (!open) return;
     const handler = (e: KeyboardEvent) => {
-      if (!open) return;
       if (e.key === "ArrowDown") { e.preventDefault(); setSelected((s) => Math.min(s + 1, filtered.length - 1)); }
       if (e.key === "ArrowUp")   { e.preventDefault(); setSelected((s) => Math.max(s - 1, 0)); }
       if (e.key === "Enter") { e.preventDefault(); execute(filtered[selected]); }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, filtered, selected]);
 
@@ -404,7 +404,6 @@ export default function GlobalUI() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const footerToastShown = useRef(false);
 
   const addToast = useCallback((detail: Omit<ToastItem, "id">) => {
     const id = Math.random().toString(36).slice(2);
@@ -417,45 +416,40 @@ export default function GlobalUI() {
 
   useEffect(() => {
     // Ctrl/Cmd+K
+    // Keyboard: Ctrl/Cmd+K opens palette, ESC closes everything
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setCmdOpen(true); }
       if (e.key === "Escape") { setCmdOpen(false); setOnboardingOpen(false); }
     };
 
-    // Toast events
+    // Toast events from anywhere in the app
     const onToast = (e: Event) => addToast((e as CustomEvent).detail);
 
-    // Onboarding events
+    // Open onboarding from anywhere
     const onOnboarding = () => setOnboardingOpen(true);
 
-    // Intercept #waitlist clicks globally → open onboarding modal
+    // Open command palette from the ⌘K navbar hint button
+    const onOpenPalette = () => setCmdOpen(true);
+
+    // Intercept #waitlist link clicks → open onboarding modal instead
     const onWaitlistClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const link = target.closest('[href="#waitlist"]');
       if (link) { e.preventDefault(); setOnboardingOpen(true); }
     };
 
-    // Footer email focus toast (once per session)
-    const onFooterFocus = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target.matches('[data-footer-email]') && !footerToastShown.current) {
-        footerToastShown.current = true;
-        addToast({ type: "info", title: "Join 400+ founders", body: "We're onboarding 50 teams this month." });
-      }
-    };
-
     document.addEventListener("keydown", onKey);
     window.addEventListener("show-toast", onToast);
     window.addEventListener("open-onboarding", onOnboarding);
+    window.addEventListener("open-command-palette", onOpenPalette);
     document.addEventListener("click", onWaitlistClick);
-    document.addEventListener("focus", onFooterFocus, true);
 
     return () => {
       document.removeEventListener("keydown", onKey);
       window.removeEventListener("show-toast", onToast);
       window.removeEventListener("open-onboarding", onOnboarding);
+      window.removeEventListener("open-command-palette", onOpenPalette);
       document.removeEventListener("click", onWaitlistClick);
-      document.removeEventListener("focus", onFooterFocus, true);
     };
   }, [addToast]);
 

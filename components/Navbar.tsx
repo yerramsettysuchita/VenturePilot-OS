@@ -60,7 +60,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -139,7 +139,7 @@ export default function Navbar() {
             </Link>
             <kbd
               className="hidden md:block text-[11px] text-slate-400 border border-slate-200 px-1.5 py-0.5 rounded cursor-pointer hover:border-slate-300 transition-colors"
-              onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }))}
+              onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
               title="Open command palette"
             >
               ⌘K
