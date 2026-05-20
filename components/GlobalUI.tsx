@@ -95,12 +95,13 @@ function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void 
             className="fixed inset-0 bg-black/60 z-[999]"
             onClick={onClose}
           />
+          <div className="fixed inset-0 z-[1000] flex items-start justify-center px-4 pt-[20vh] pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: -12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -12 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-[20vh] left-1/2 -translate-x-1/2 w-full max-w-[560px] z-[1000] mx-4"
+            className="w-full max-w-[560px] pointer-events-auto"
           >
             <div className="card overflow-hidden shadow-2xl">
               <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-100">
@@ -143,6 +144,7 @@ function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void 
               </div>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
@@ -259,12 +261,13 @@ function OnboardingModal({ open, onClose }: { open: boolean; onClose: () => void
             className="fixed inset-0 bg-black z-[998]"
             onClick={onClose}
           />
+          <div className="fixed inset-0 z-[999] flex items-center justify-center px-4 pointer-events-none overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.25 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[520px] z-[999] mx-4"
+            className="w-full max-w-[520px] pointer-events-auto my-8"
           >
             <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
               {/* Progress bar */}
@@ -405,6 +408,7 @@ function OnboardingModal({ open, onClose }: { open: boolean; onClose: () => void
               </div>
             </div>
           </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
