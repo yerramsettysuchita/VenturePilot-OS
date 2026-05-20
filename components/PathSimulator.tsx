@@ -132,24 +132,52 @@ function PathCard({ path, index }: { path: Path; index: number }) {
 export default function PathSimulator() {
   const [idea, setIdea] = useState("");
   const [loading, setLoading] = useState(false);
-  const [dots, setDots] = useState("");
   const [results, setResults] = useState<PathSet | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    if (!loading) return;
-    const iv = setInterval(() => setDots((d) => (d.length >= 3 ? "" : d + ".")), 400);
-    return () => clearInterval(iv);
-  }, [loading]);
-
-  const simulate = () => {
+  const simulate = async () => {
     if (!idea.trim()) return;
     setLoading(true);
     setResults(null);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startup_idea: idea }),
+      });
+      const data = await res.json();
+      if (data.success && data.paths) {
+        // Map API response to local Path shape
+        const mapped = data.paths.map((p: {
+          path_label: string; path_name: string; total_score: number; path_type: string;
+          description: string; scores: Record<string, number>; reasoning: string;
+        }) => ({
+          label: p.path_label,
+          name: p.path_name,
+          score: p.total_score,
+          type: p.path_type,
+          desc: p.description,
+          dims: Object.entries(p.scores).slice(0, 3).map(([k, v]) => ({
+            label: k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 12),
+            val: v as number,
+          })),
+          bestFor: p.reasoning ? p.reasoning.split(" ").slice(0, 5).join(" ") + "..." : "Technical founders",
+        })) as PathSet;
+        setResults(mapped);
+        setSessionId(data.session_id);
+        localStorage.setItem("vpos_session_id", data.session_id);
+        localStorage.setItem("vpos_startup_idea", idea);
+      } else {
+        // Fallback to local logic if API unavailable
+        setResults(PATHS[detectCategory(idea)]);
+      }
+    } catch {
+      // Graceful fallback
       setResults(PATHS[detectCategory(idea)]);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   const fillPill = (text: string) => {
@@ -212,7 +240,7 @@ export default function PathSimulator() {
               disabled={loading || !idea.trim()}
               className="btn-scale w-full h-12 rounded-xl bg-[#0A0A0F] text-white text-sm font-bold hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? `Analyzing market signals${dots}` : "Simulate Paths →"}
+              {loading ? "Analyzing market signals..." : "Simulate Paths →"}
             </button>
           </div>
 
@@ -265,6 +293,14 @@ export default function PathSimulator() {
                   {results.map((path, i) => (
                     <PathCard key={path.label} path={path} index={i} />
                   ))}
+                  {sessionId && (
+                    <a
+                      href={`/venture-twin?session=${sessionId}`}
+                      className="btn-scale block w-full py-3 text-center text-sm font-bold rounded-xl border-2 border-[#00C9A7] text-[#00C9A7] hover:bg-[#00C9A7] hover:text-white transition-all"
+                    >
+                      View your Venture Twin →
+                    </a>
+                  )}
                   <div className="flex items-center justify-between pt-2 mt-1">
                     <p className="text-sm text-slate-500">
                       Want the full analysis with execution board?

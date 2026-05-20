@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import ReturningUserBanner from "@/components/ReturningUserBanner";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import AssumptionTicker from "@/components/AssumptionTicker";
@@ -26,6 +27,7 @@ export default function Home() {
   return (
     <main>
       <AnnouncementBar />
+      <ReturningUserBanner />
       <Navbar />
       <Hero />
       <AssumptionTicker />

@@ -178,6 +178,7 @@ function OnboardingModal({ open, onClose }: { open: boolean; onClose: () => void
   const [step, setStep] = useState(1);
   const [copied, setCopied] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", role: "", idea: "", stage: "", challenge: "" });
 
   useEffect(() => {
@@ -189,36 +190,47 @@ function OnboardingModal({ open, onClose }: { open: boolean; onClose: () => void
     }
   }, [open]);
 
-  const checkEmail = () => {
-    if (!form.email) return;
-    const list = JSON.parse(localStorage.getItem("vpx-onboarding") || "[]") as { email: string }[];
-    if (list.some((e) => e.email === form.email)) { setAlreadySubmitted(true); setStep(3); return true; }
-    return false;
-  };
-
   const next1 = () => {
     if (!form.name || !form.email || !form.role) return;
-    if (checkEmail()) return;
     setStep(2);
   };
 
-  const next2 = () => {
+  const next2 = async () => {
     if (!form.idea || !form.stage || !form.challenge) return;
-    const list = JSON.parse(localStorage.getItem("vpx-onboarding") || "[]");
-    list.push({ ...form, ts: Date.now() });
-    localStorage.setItem("vpx-onboarding", JSON.stringify(list));
-    window.dispatchEvent(new CustomEvent("show-toast", {
-      detail: { type: "success", title: "You're on the list!", body: "We'll reach out within 24 hours." }
-    }));
-    setStep(3);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: form.name,
+          email: form.email,
+          founder_type: form.role,
+          stage: form.stage,
+          biggest_challenge: form.challenge,
+          startup_idea: form.idea,
+        }),
+      });
+      const data = await res.json();
+      if (data.already_registered) setAlreadySubmitted(true);
+      window.dispatchEvent(new CustomEvent("show-toast", {
+        detail: { type: "success", title: "You're on the list!", body: "We'll reach out within 24 hours." },
+      }));
+    } catch {
+      // Fall through to success state — never block the user
+    } finally {
+      setSubmitting(false);
+      setStep(3);
+    }
   };
 
   const copyLink = () => {
-    navigator.clipboard.writeText("https://venturepilot.vercel.app/early-access").catch(() => {});
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://venturepilot-os.onrender.com";
+    navigator.clipboard.writeText(`${appUrl}/early-access`).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     window.dispatchEvent(new CustomEvent("show-toast", {
-      detail: { type: "success", title: "Link copied!", body: "Share it with a founder who needs this." }
+      detail: { type: "success", title: "Link copied!", body: "Share it with a founder who needs this." },
     }));
   };
 
@@ -339,10 +351,10 @@ function OnboardingModal({ open, onClose }: { open: boolean; onClose: () => void
                       </button>
                       <button
                         onClick={next2}
-                        disabled={!form.idea || !form.stage || !form.challenge}
+                        disabled={!form.idea || !form.stage || !form.challenge || submitting}
                         className="btn-scale flex-1 py-3.5 rounded-xl bg-[#0A0A0F] text-white text-sm font-bold hover:bg-slate-800 transition-colors disabled:opacity-40"
                       >
-                        Almost there →
+                        {submitting ? "Submitting..." : "Almost there →"}
                       </button>
                     </div>
                   </div>
