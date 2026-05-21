@@ -226,9 +226,11 @@ function OnboardingModal({ open, onClose }: { open: boolean; onClose: () => void
     }
   };
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://venturepilot-os.onrender.com";
+  const referralUrl = appUrl.replace(/\/$/, "");
+
   const copyLink = () => {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://venturepilot-os.onrender.com";
-    navigator.clipboard.writeText(`${appUrl}/early-access`).catch(() => {});
+    navigator.clipboard.writeText(referralUrl).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     window.dispatchEvent(new CustomEvent("show-toast", {
@@ -396,7 +398,7 @@ function OnboardingModal({ open, onClose }: { open: boolean; onClose: () => void
                         onClick={copyLink}
                         className="w-full flex items-center justify-between px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 hover:border-[#00C9A7] transition-colors"
                       >
-                        <span className="font-mono">venturepilot.vercel.app/early-access</span>
+                        <span className="font-mono text-xs truncate">{referralUrl}</span>
                         <span className="font-semibold text-[#00C9A7] ml-2">{copied ? "Copied!" : "Copy"}</span>
                       </button>
                     </div>
